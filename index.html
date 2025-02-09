@@ -105,7 +105,7 @@
             <div class="card">
                 <h2>上限时间计算</h2>
                 <div class="input-group">
-                    <label>当前资源点数</label>
+                    <label>当前心力数</label>
                     <input type="number" id="currentPoints" value="0" min="0" />
                 </div>
                 <button onclick="calculateLimitTime()">计算上限时间</button>
@@ -120,11 +120,11 @@
                     <input type="datetime-local" id="targetTime" />
                 </div>
                 <div class="input-group">
-                    <label>当前资源点数</label>
+                    <label>当前心力数</label>
                     <input type="number" id="currentPoints2" min="0" />
                 </div>
                 <div class="input-group">
-                    <label>目标资源点数</label>
+                    <label>目标心力数</label>
                     <input type="number" id="targetPoints" min="0" />
                 </div>
                 <button onclick="calculateConsumption()">计算消耗量</button>
@@ -204,7 +204,7 @@
 
                 if (consumption < 0) {
                     document.getElementById("result3").innerHTML =
-                        "无法达到目标，资源不足";
+                        "无法达到目标，当前心力不足";
                 } else {
                     document.getElementById(
                         "result3"
