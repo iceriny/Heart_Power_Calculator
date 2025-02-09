@@ -6,7 +6,7 @@
         <title>资源恢复计算器</title>
         <style>
             :root {
-                --primary: #4a90e2;
+                --primary: #d87aae;
                 --bg: #f5f7fa;
                 --card-bg: #fff;
             }
@@ -25,16 +25,31 @@
             }
 
             .container {
-                max-width: 800px;
+                display: flex;
+                justify-content: center;
+                align-content: center;
                 margin: 0 auto;
+                height: calc(100vh - 4rem);
             }
-
             .card {
                 background: var(--card-bg);
                 border-radius: 12px;
                 padding: 1.5rem;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-                margin-bottom: 1.5rem;
+                margin: 0 1.5rem 3rem 1.5rem;
+                width: 100%;
+            }
+            /* 针对移动设备 */
+            @media (max-width: 1023px) {
+                /* 移动端样式 */
+                .container {
+                    flex-direction: column; /* 让子元素垂直排列 */
+
+                    height: auto;
+                }
+                .card {
+                    margin: 1.5rem 0;
+                }
             }
 
             h2 {
@@ -53,13 +68,16 @@
                 color: #666;
             }
 
-            input,
+            input[type="number"],
             button {
                 padding: 0.8rem;
                 border: 1px solid #ddd;
                 border-radius: 8px;
                 width: 100%;
                 font-size: 1rem;
+            }
+            input[type="checkbox"] {
+                display: inline;
             }
 
             button {
@@ -95,9 +113,12 @@
                 <h2>恢复量计算</h2>
                 <div class="input-group">
                     <label>选择时间点</label>
-                    <input type="datetime-local" id="timeInput" />
+                    <input
+                        type="datetime-local"
+                        id="timeInput"
+                        onchange="calculateRecovery()"
+                    />
                 </div>
-                <button onclick="calculateRecovery()">计算恢复量</button>
                 <div class="result" id="result1"></div>
             </div>
 
@@ -106,9 +127,15 @@
                 <h2>上限时间计算</h2>
                 <div class="input-group">
                     <label>当前心力数</label>
-                    <input type="number" id="currentPoints" value="0" min="0" />
+                    <input
+                        type="number"
+                        id="currentPoints"
+                        value="0"
+                        min="0"
+                        step="1"
+                        onchange="calculateLimitTime()"
+                    />
                 </div>
-                <button onclick="calculateLimitTime()">计算上限时间</button>
                 <div class="result" id="result2"></div>
             </div>
 
@@ -117,25 +144,100 @@
                 <h2>消耗量计算</h2>
                 <div class="input-group">
                     <label>目标时间点</label>
-                    <input type="datetime-local" id="targetTime" />
+                    <input
+                        type="datetime-local"
+                        id="targetTime"
+                        onchange="calculateConsumption()"
+                    />
                 </div>
                 <div class="input-group">
                     <label>当前心力数</label>
-                    <input type="number" id="currentPoints2" min="0" />
+                    <input
+                        type="number"
+                        id="currentPoints2"
+                        min="0"
+                        step="1"
+                        onchange="calculateConsumption()"
+                    />
                 </div>
                 <div class="input-group">
                     <label>目标心力数</label>
-                    <input type="number" id="targetPoints" min="0" />
+                    <input
+                        type="number"
+                        id="targetPoints"
+                        min="0"
+                        step="1"
+                        onchange="calculateConsumption()"
+                    />
                 </div>
-                <button onclick="calculateConsumption()">计算消耗量</button>
                 <div class="result" id="result3"></div>
             </div>
+        </div>
+
+        <!-- 功能4 -->
+        <div class="card">
+            <h2>心力消耗计算</h2>
+            <div class="input-group">
+                <label>需要消耗的心力</label>
+                <input
+                    type="number"
+                    id="currentPoints3"
+                    value="0"
+                    min="0"
+                    step="1"
+                    onchange="calculatePlayCount(event)"
+                />
+                <label>副本<span style="margin-left: 1rem;">🔒</span><input type="checkbox" onchange="()=>{
+                    if(event.target.checked){
+                        document.getElementById('fbCount').value = 1;
+                    }else{
+                        document.getElementById('fbCount').value = 0;
+                    }
+                }"></input></label>
+
+                <input
+                    type="number"
+                    id="fbCount"
+                    value="0"
+                    min="0"
+                    step="1"
+                    onchange="calculatePlayCount(event)"
+                />
+
+                <label>镇守<span style="margin-left: 1rem;">🔒</span><input type="checkbox"></label>
+                <input
+                    type="number"
+                    id="zsCount"
+                    value="0"
+                    min="0"
+                    step="1"
+                    onchange="calculatePlayCount(event)"
+                />
+
+                <label>据点<span style="margin-left: 1rem;">🔒</span><input type="checkbox"></label>
+                <input
+                    type="number"
+                    id="jdCount"
+                    value="0"
+                    min="0"
+                    step="1"
+                    onchange="calculatePlayCount(event)"
+                />
+            </div>
+            <div class="result" id="result2"></div>
         </div>
 
         <script>
             // 每分钟恢复量
             const RECOVERY_RATE = 9; // 分钟每点
             const MAX_POINTS = 500;
+            const FB_COST = 60;
+            const ZS_COST = 40;
+            const JD_COST = 20;
+
+            let fbLocked = false;
+            let zsLocked = false;
+            let jdLocked = false;
 
             // 功能1：计算恢复量
             function calculateRecovery() {
@@ -178,7 +280,14 @@
                     targetTime
                 )}</span> 达到上限`;
             }
-
+            /**
+             * 判断一个日期是否是一个有效的日期对象
+             * @param {Date} d - 日期对象
+             * @returns {boolean} - 如果日期对象有效则返回true，否则返回false
+             */
+            function isValidDate(d) {
+                return d instanceof Date && !isNaN(d.getTime());
+            }
             // 功能3：计算消耗量
             function calculateConsumption() {
                 const targetTime = new Date(
@@ -190,6 +299,16 @@
                 const target = parseInt(
                     document.getElementById("targetPoints").value
                 );
+                if (
+                    current === NaN ||
+                    target === NaN ||
+                    !isValidDate(targetTime)
+                ) {
+                    document.getElementById("result3").innerHTML =
+                        "请输入完整信息.";
+                    return;
+                }
+
                 const now = new Date();
 
                 if (targetTime < now) {
@@ -221,6 +340,36 @@
                     hour: "2-digit",
                     minute: "2-digit",
                 });
+            }
+
+            // 功能4：计算消耗对应数量的心力需要完成多少次玩法
+            function calculatePlayCount(event) {
+
+                console.log(event);
+                const changeId = event.target.id;
+                const currentPoints = parseInt(
+                    document.getElementById("currentPoints3").value
+                );
+                const fbCount = parseInt(
+                    document.getElementById("fbCount").value
+                );
+                const zsCount = parseInt(
+                    document.getElementById("zsCount").value
+                );
+                const jdCount = parseInt(
+                    document.getElementById("jdCount").value
+                );
+                if (
+                    isNaN(currentPoints) ||
+                    isNaN(fbCount) ||
+                    isNaN(zsCount) ||
+                    isNaN(jdCount)
+                ) {
+                    document.getElementById("result4").innerHTML =
+                        "请输入完整信息.";
+                    return;
+                }
+                console.log(changeId);
             }
         </script>
     </body>
