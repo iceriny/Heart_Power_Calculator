@@ -1,0 +1,4 @@
+html {
+    /* 从左下到右上的线性渐变背景 */
+    background: linear-gradient(to top right, #3c2319, #262322);
+}
