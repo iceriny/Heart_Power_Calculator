@@ -1,0 +1,13 @@
+:root {
+    --page-top-padding: 50px;
+}
+
+html {
+    /* 从左下到右上的线性渐变背景 */
+    background: linear-gradient(to top right, #3c2319, #161312);
+}
+
+.App {
+    min-height: calc(100vh - var(--page-top-padding));
+    padding: var(--page-top-padding) 0 0 0;
+}

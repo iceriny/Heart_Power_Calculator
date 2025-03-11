@@ -1,6 +1,7 @@
 import type { Breakpoint } from "antd";
 import { Grid } from "antd";
 
+import dayjs from "dayjs";
 // 使用 Ant Design 的断点工具
 const { useBreakpoint: useAntdBreakpoint } = Grid;
 
@@ -78,6 +79,9 @@ function getValueFromBreakpoint<T extends Record<Breakpoint, unknown>>(
         return values[currentBreakpoint] ?? defaultValue ?? values.md;
     }
 }
+function getNextMonday(currentDate: dayjs.Dayjs = dayjs()) {
+    return currentDate.add(1, "week").startOf("week").add(10, "hour");
+}
 
 // 导出模块函数供外部使用
 export {
@@ -85,4 +89,5 @@ export {
     getCurrentBreakpoint,
     breakpointComparative,
     getValueFromBreakpoint,
+    getNextMonday,
 };
